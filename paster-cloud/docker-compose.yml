@@ -45,7 +45,7 @@ services:
         #condition: service_healthy
 
   paster-cloud-frontend:
-    image: k0v0/kovo-docker-repo:paster-cloud-frontend-2024-04-29
+    image: k0v0/kovo-docker-repo:paster-cloud-frontend-2024-05-08_23-45
     container_name: paster-cloud-frontend
     restart: always
     environment:
