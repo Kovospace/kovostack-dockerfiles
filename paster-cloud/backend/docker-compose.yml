@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:5.7.44
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_here
+      MYSQL_DATABASE: your_database_name_here
+      MYSQL_USER: your_mysql_username_here
+      MYSQL_PASSWORD: your_mysql_password_here
+    ports:
+      - "4005:3306"
+    volumes:
+      - /path/on/host:/var/lib/mysql

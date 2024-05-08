@@ -1,0 +1,42 @@
+#!/bin/bash
+
+pre_up_actions() {
+	bash ~/scripts/gopnik-vault.sh
+}
+
+post_up_actions() {
+	echo -e "not implemented"
+}
+
+pre_down_actions() {
+	echo -e "not implemented"
+}
+
+post_down_actions() {
+	echo -e "not implemented"
+}
+
+main() {
+    case "$1" in
+        "up")
+            pre_up_actions
+            docker-compose up -d paster-cloud-db
+            sleep 10
+            docker-compose up -d paster-cloud-backend
+            sleep 2
+            docker-compose up -d paster-cloud-frontend
+            post_up_actions
+            ;;
+        "down")
+            pre_down_actions
+            docker-compose down
+            post_down_actions
+            ;;
+        *)
+            echo "Usage: $0 [up|down]"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

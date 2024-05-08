@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  kovo-space:
+    image: k0v0/kovo-docker-repo:kovo-space-2024-03-02
+    container_name: kovo-space
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      RAILS_ENV: ${RAILS_ENV:-production}
+      RAILS_SERVE_STATIC_FILES: ${RAILS_SERVE_STATIC_FILES:-true}
+      VIRTUAL_HOST: ${VIRTUAL_HOST:-kovo.space}
+      VIRTUAL_PORT: ${VIRTUAL_PORT:-3000}
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST:-kovo.space}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-kovo.mato@gmail.com}
+    volumes:
+      - ${KOVO_SPACE_DATABASES_VOLUME}:/var/app/db/databases
+      - ${KOVO_SPACE_UPLOADS_VOLUME}:/var/app/public/uploads
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external: true

@@ -1,0 +1,44 @@
+version: "3"
+services:
+  proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+    volumes:
+      - certs:/etc/nginx/certs:ro
+      - vhost.d:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - ${DOCKER_HOST_PATH:-/var/run/docker.sock}:/tmp/docker.sock:ro
+    networks:
+      - nginx-proxy
+      - default
+ 
+  letsencrypt-companion:
+    image: nginxproxy/acme-companion
+    container_name: letsencrypt
+    restart: always
+    volumes:
+      - certs:/etc/nginx/certs
+      - acme:/etc/acme.sh
+      - vhost.d:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - ${DOCKER_HOST_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    networks:
+      - nginx-proxy
+    depends_on:
+      - proxy
+ 
+networks:
+  nginx-proxy:
+    external: true
+ 
+volumes:
+  certs:
+  acme:
+  vhost.d:
+  html:
