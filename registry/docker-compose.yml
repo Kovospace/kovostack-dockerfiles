@@ -11,7 +11,7 @@ services:
       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
     volumes:
-      - ~/docker/volumes/registry:/var/lib/registry
+      - /home/kovo/docker/volumes/registry:/var/lib/registry
 
   registry-ui:
     image: joxit/docker-registry-ui:main
