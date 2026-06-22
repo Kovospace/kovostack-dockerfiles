@@ -2,6 +2,7 @@ services:
 
   app:
     image: 95.216.187.218:5000/kovospace-frontend:latest
+    container_name: "kovo-space-app"
     ports:
       - "3000:3000"
     environment:
@@ -26,6 +27,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
+    container_name: "kovo-space-db"
     ports:
       - "5434:5432"
     environment:
