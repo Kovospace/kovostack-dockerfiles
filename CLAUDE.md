@@ -39,6 +39,13 @@ stack; there is no umbrella compose file joining them.
 - **`registry/docker-compose.yml` hardcodes the host checkout path**
   (`/home/kovo/docker/dockerfiles/registry-config/config.yml`). If the repo is ever
   cloned to a different path on the VPS, that bind mount breaks.
+- **`registry:3` (distribution v3) reads its config from `/etc/distribution/config.yml`,
+  not `/etc/docker/registry/config.yml`** (that was the v2 path). Mounting the custom
+  `config.yml` to the old path makes the container silently run on its baked-in default
+  config — no auth, anonymous read/delete all work — with no error or warning. This
+  bit us once already (anonymous users could list and delete pushed images). Always
+  verify auth is actually enforced after touching this file: `curl -i
+  http://<host>:5000/v2/_catalog` should return `401`, not `200`.
 - **`paster-cloud/backend/docker-compose.yml`** is a leftover standalone MySQL compose
   and is not part of the live stack — the real stack (top-level
   `paster-cloud/docker-compose.yml`) uses Postgres. Don't treat the backend

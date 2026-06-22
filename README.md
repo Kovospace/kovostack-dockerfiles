@@ -159,7 +159,11 @@ Notes:
 ### `registry/` — private Docker image registry
 - `registry` (registry:3) — port 5000, stores images pushed as `k0v0/kovo-docker-repo:*`
 - `registry-ui` (joxit/docker-registry-ui) — port 9080, browser UI for the registry
-- Auth via htpasswd (`registry-config/config.yml`, htpasswd file under `/auth` on host)
+- Auth via htpasswd (`registry-config/config.yml`, htpasswd file under `/auth` on host).
+  `registry:3` (distribution v3) loads its config from **`/etc/distribution/config.yml`**,
+  not the v2-era `/etc/docker/registry/config.yml` — the bind mount in
+  `registry/docker-compose.yml` must target the v3 path or auth silently never engages
+  (the container falls back to its baked-in default config with no auth at all).
 - Not on the `nginx-proxy` network — reached directly via raw ports, not a domain/TLS.
 - This registry is where the prebuilt images used by `kovo-space` and `paster-cloud`
   (`k0v0/kovo-docker-repo:<app>-<tag>`) come from — build/push happens outside this repo.
