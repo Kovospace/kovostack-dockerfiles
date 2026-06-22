@@ -8,7 +8,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://kovospace:${POSTGRES_PASSWORD}@postgres:5434/kovospace
+      DATABASE_URL: postgresql://kovospace:${POSTGRES_PASSWORD}@postgres:5432/kovospace
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
       NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
       VIRTUAL_HOST: ${VIRTUAL_HOST:-kovo.space}
