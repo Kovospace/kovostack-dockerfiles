@@ -3,7 +3,8 @@ services:
   app:
 #    image: 95.216.187.218:5000/kovospace-frontend:latest
 #    image: 95.216.187.218:5000/kovospace-frontend:sha-6d1a5c4
-    image: 95.216.187.218:5000/kovospace-frontend:sha-5d9c982
+#    image: 95.216.187.218:5000/kovospace-frontend:sha-5d9c982
+    image: 5.216.187.218:5000/kovospace-frontend:sha-17b749d
     container_name: "kovo-space-app"
     ports:
       - "3000:3000"
