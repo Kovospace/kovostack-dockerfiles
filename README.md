@@ -122,6 +122,32 @@ docker network create paster-cloud-private
 Bring `nginx/` up **first** (it owns ports 80/443) before bringing up anything that
 depends on the `nginx-proxy` network.
 
+## Apps, containers & networking at a glance
+
+| App | Container | Networks connected to | Exposed ports (host:container) | Domain assigned |
+|---|---|---|---|---|
+| nginx | `nginx` | `nginx-proxy`, `default` | 80:80, 443:443 | — (this *is* the entry point for every domain below) |
+| nginx | `letsencrypt` | `nginx-proxy` | — | — |
+| registry | `registry` | default (project-local network, shared with `registry-ui` only) | 5000:5000 | — (no domain, raw IP:port) |
+| registry | `registry-ui` | default (project-local network, shared with `registry` only) | 9080:80 | — (no domain, raw IP:port) |
+| kovo-space | `kovo-space` | `nginx-proxy` | 3000:3000 | `kovo.space` |
+| paster-cloud | `paster-cloud-db` | `paster-cloud-private` | 5432:5432 | — (internal only, not public) |
+| paster-cloud | `paster-cloud-backend` | `nginx-proxy`, `paster-cloud-private` | 4004:4004 | `api.paster.cloud` |
+| paster-cloud | `paster-cloud-frontend` | `nginx-proxy` | 4204:80 | `paster.cloud` |
+
+Notes:
+- "Domain assigned" reflects each service's `VIRTUAL_HOST`/`LETSENCRYPT_HOST` default in its
+  `docker-compose.yml` — actual value can be overridden per-host via `.env`.
+- Host port mappings are mostly irrelevant for the public-facing containers: traffic actually
+  arrives via `nginx`'s 80/443 and gets proxied container-to-container over the `nginx-proxy`
+  network to each service's `VIRTUAL_PORT`, not via the `ports:` mapping shown above.
+- `paster-cloud-frontend`'s `ports: "4204:80"` doesn't match what its own `nginx.conf` listens
+  on (`4204` inside the container, not `80`) — a pre-existing inconsistency in that compose file.
+  It doesn't break anything in practice since `nginx-proxy` reaches it via `VIRTUAL_PORT=4204`
+  over the internal network rather than through this host port mapping.
+- `registry`/`registry-ui` are reachable only via their raw host ports (`<vps-ip>:5000` /
+  `<vps-ip>:9080`) — they're intentionally not on `nginx-proxy`, so no domain or TLS applies.
+
 ## Stacks and their services
 
 ### `nginx/` — reverse proxy & TLS
