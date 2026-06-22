@@ -27,3 +27,4 @@ services:
       SINGLE_REGISTRY: "true"
       REGISTRY_SECURED: "true"
       DELETE_IMAGES: "true"
+      PULL_URL: 95.216.187.218:5000

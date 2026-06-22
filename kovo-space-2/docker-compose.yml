@@ -1,16 +1,24 @@
 services:
+
   app:
-    build: .
+    image: 95.216.187.218:5000/kovospace-frontend:latest
     ports:
       - "3000:3000"
     environment:
       DATABASE_URL: postgresql://kovospace:${POSTGRES_PASSWORD}@postgres:5434/kovospace
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
       NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
+      VIRTUAL_HOST: ${VIRTUAL_HOST:-kovo.space}
+      VIRTUAL_PORT: ${VIRTUAL_PORT:-3000}
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST:-kovo.space}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-kovo.mato@gmail.com}
     volumes:
       - /home/kovo/docker/volumes/kovo-space-2/media_uploads:/app/public/media
       - /home/kovo/docker/volumes/kovo-space-2/icon_uploads:/app/public/icons
       - /home/kovo/docker/volumes/kovo-space-2/image_uploads:/app/public/images
+    networks:
+      - nginx-proxy
+      - default
     depends_on:
       postgres:
         condition: service_healthy
@@ -32,3 +40,7 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+
+networks:
+  nginx-proxy:
+    external: true
