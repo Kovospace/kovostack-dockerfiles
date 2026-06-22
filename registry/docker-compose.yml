@@ -22,6 +22,8 @@ services:
       - "9080:80"
     environment:
       REGISTRY_TITLE: Private Docker Registry
-      REGISTRY_URL: http://registry:5000
+      NGINX_PROXY_PASS_URL: http://registry:5000
+      NGINX_RESOLVER: 127.0.0.11
       SINGLE_REGISTRY: "true"
+      REGISTRY_SECURED: "true"
       DELETE_IMAGES: "true"

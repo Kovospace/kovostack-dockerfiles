@@ -51,3 +51,5 @@ Thumbs.db
 # Server/local enviromant variables for containers
 .env
 
+*.iml
+
