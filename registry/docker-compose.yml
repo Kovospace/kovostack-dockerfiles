@@ -9,7 +9,7 @@ services:
       - "5000:5000"
     volumes:
       - /home/kovo/docker/volumes/registry:/var/lib/registry
-      - /home/kovo/docker/registry-config/config.yml:/etc/docker/registry/config.yml
+      - /home/kovo/docker/dockerfiles/registry-config/config.yml:/etc/docker/registry/config.yml
       - /home/kovo/docker/auth:/auth
 
   registry-ui:
