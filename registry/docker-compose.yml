@@ -7,11 +7,10 @@ services:
     restart: unless-stopped
     ports:
       - "5000:5000"
-    environment:
-      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
-      REGISTRY_STORAGE_DELETE_ENABLED: "true"
     volumes:
       - /home/kovo/docker/volumes/registry:/var/lib/registry
+      - /home/kovo/docker/registry-config/config.yml:/etc/docker/registry/config.yml
+      - /home/kovo/docker/auth:/auth
 
   registry-ui:
     image: joxit/docker-registry-ui:main

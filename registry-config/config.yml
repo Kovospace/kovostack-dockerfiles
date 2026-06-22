@@ -1,0 +1,30 @@
+version: 0.1
+
+log:
+  level: info
+
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+
+http:
+  addr: :5000
+
+auth:
+  htpasswd:
+    realm: basic-realm
+    path: /auth/htpasswd
+
+headers:
+  Access-Control-Allow-Origin:
+    - http://95.216.187.218:9080
+  Access-Control-Allow-Methods:
+    - HEAD
+    - GET
+    - OPTIONS
+    - DELETE
+  Access-Control-Allow-Headers:
+    - Authorization
+    - Accept
+    - Cache-Control
+    - Content-Type
