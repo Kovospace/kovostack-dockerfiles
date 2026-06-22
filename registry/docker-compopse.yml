@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  registry:
+    image: registry:3
+    container_name: registry
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+    volumes:
+      - ~/docker/volumes/registry:/var/lib/registry
+
+  registry-ui:
+    image: joxit/docker-registry-ui:main
+    container_name: registry-ui
+    restart: unless-stopped
+    depends_on:
+      - registry
+    ports:
+      - "9080:80"
+    environment:
+      REGISTRY_TITLE: Private Docker Registry
+      REGISTRY_URL: http://registry:5000
+      SINGLE_REGISTRY: "true"
+      DELETE_IMAGES: "true"
