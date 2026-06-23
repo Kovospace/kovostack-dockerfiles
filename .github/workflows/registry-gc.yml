@@ -1,0 +1,18 @@
+name: Registry garbage collection
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  garbage-collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run garbage collection over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: docker compose -f /home/kovo/docker/dockerfiles/registry/docker-compose.yml exec -T registry bin/registry garbage-collect --delete-untagged /etc/distribution/config.yml
