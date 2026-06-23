@@ -9,7 +9,7 @@ services:
     container_name: "kovo-space-app"
     ports:
       - "3000:3000"
-    user: "1000:1000"
+    user: "0:0"
     environment:
       DATABASE_URL: postgresql://kovospace:${POSTGRES_PASSWORD}@postgres:5432/kovospace
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
