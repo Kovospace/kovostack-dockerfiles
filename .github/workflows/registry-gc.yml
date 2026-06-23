@@ -15,4 +15,5 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_PRIVATE_SSH_KEY }}
+          password: ${{ secrets.VPS_PASSWORD }}
           script: docker compose -f /home/kovo/docker/dockerfiles/registry/docker-compose.yml exec -T registry bin/registry garbage-collect --delete-untagged /etc/distribution/config.yml
