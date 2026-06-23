@@ -1,12 +1,9 @@
 services:
 
   app:
-#    image: 95.216.187.218:5000/kovospace-frontend:latest
-#    image: 95.216.187.218:5000/kovospace-frontend:sha-6d1a5c4
-#    image: 95.216.187.218:5000/kovospace-frontend:sha-5d9c982
-#    image: 95.216.187.218:5000/kovospace-frontend:sha-17b749d
-    image: 95.216.187.218:5000/kovospace-frontend:sha-ab040ff
+    image: 95.216.187.218:5000/kovospace-frontend:latest
     container_name: "kovo-space-app"
+    pull_policy: always
     ports:
       - "3000:3000"
     user: "0:0"
