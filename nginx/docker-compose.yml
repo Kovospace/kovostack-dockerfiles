@@ -12,6 +12,7 @@ services:
     volumes:
       - certs:/etc/nginx/certs:ro
       - vhost.d:/etc/nginx/vhost.d
+      - ./vhost.d/default:/etc/nginx/vhost.d/default:ro
       - html:/usr/share/nginx/html
       - ${DOCKER_HOST_PATH:-/var/run/docker.sock}:/tmp/docker.sock:ro
     networks:
