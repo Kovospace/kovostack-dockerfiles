@@ -1,4 +1,4 @@
-name: Registry garbage collection
+name: Registry garbage collection and host cleanup
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ jobs:
   garbage-collect:
     runs-on: ubuntu-latest
     steps:
-      - name: Run garbage collection over SSH
+      - name: Run garbage collection and prune over SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -17,5 +17,17 @@ jobs:
           key: ${{ secrets.VPS_PRIVATE_SSH_KEY }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
+            set -e
             export DOCKER_HOST=unix:///run/user/1000/docker.sock
+
+            echo "::group::Registry garbage collection"
             docker exec registry /bin/registry garbage-collect --delete-untagged /etc/distribution/config.yml
+            echo "::endgroup::"
+
+            echo "::group::Prune unused images"
+            docker image prune -a -f
+            echo "::endgroup::"
+
+            echo "::group::Prune build cache"
+            docker builder prune -f
+            echo "::endgroup::"
