@@ -21,8 +21,8 @@ services:
       LETSENCRYPT_HOST: ${LETSENCRYPT_HOST:-neser.sk}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-kovo.mato@gmail.com}
     volumes:
-      - ${DATA_DIR:-./data}/db:/app/data # SQLite database file
-      - ${DATA_DIR:-./data}/media:/app/public/media # uploaded flyers + DJ sets
+      - /home/kovo/docker/volumes/nsr/sqlite/db:/app/data # SQLite database file
+      - /home/kovo/docker/volumes/nsr/media:/app/public/media # uploaded flyers + DJ sets
     networks:
       - nginx-proxy
     restart: unless-stopped
