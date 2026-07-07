@@ -2,8 +2,7 @@ services:
 
   app:
     # Local build. For a registry deploy, comment `build` and set `image:`.
-    build: .
-    # image: your-registry/nsr:latest
+    image: 95.216.187.218:5000/nsr-frontend:latest
     container_name: "nsr-app"
     ports:
       - "3010:3000" # host 3010 → container 3000 (optional when behind nginx-proxy)
