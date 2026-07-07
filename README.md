@@ -34,10 +34,23 @@ dockerfiles/
 ├── registry-config/
 │   └── config.yml           # registry auth (htpasswd) + CORS for the registry-ui
 │
-├── kovo-space/               # personal site, single Rails container
+├── kovo-space/               # OLD personal site, single Rails container (superseded by kovo-space-2)
 │   ├── docker-compose.yml
 │   ├── Dockerfile
 │   ├── run.sh
+│   └── .env                  # not committed
+│
+├── kovo-space-2/             # NEW kovo.space: Payload/Next.js frontend + postgres
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   ├── env.template           # committed placeholder (gopnik-vault refs), real secrets in .env
+│   └── .env                  # not committed
+│
+├── nsr/                       # neser.sk: Payload/Next.js app (flyers + DJ sets), SQLite
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   ├── docker-entrypoint.sh
+│   ├── env.template           # committed placeholder (gopnik-vault refs), real secrets in .env
 │   └── .env                  # not committed
 │
 └── paster-cloud/             # 3-tier app: postgres + spring backend + angular frontend
@@ -56,7 +69,9 @@ dockerfiles/
 
 Every `.env` file is git-ignored (see `.gitignore`). Where one exists, only a
 `*.env.template` / `env.template` with placeholder values is committed, e.g.
-`paster-cloud/env.template`. Secrets live only on the host.
+`paster-cloud/env.template`. Secrets live only on the host — the real `.env` is
+rendered from `env.template` at deploy time by the **gopnik-vault** helper (see
+[Secrets](#secrets-gopnik-vault)).
 
 ## How the reverse proxy + Let's Encrypt actually works
 
@@ -130,7 +145,10 @@ depends on the `nginx-proxy` network.
 | nginx | `letsencrypt` | `nginx-proxy` | — | — |
 | registry | `registry` | default (project-local network, shared with `registry-ui` only) | 5000:5000 | — (no domain, raw IP:port) |
 | registry | `registry-ui` | default (project-local network, shared with `registry` only) | 9080:80 | — (no domain, raw IP:port) |
-| kovo-space | `kovo-space` | `nginx-proxy` | 3000:3000 | `kovo.space` |
+| kovo-space *(old)* | `kovo-space` | `nginx-proxy` | 3000:3000 | `kovo.space` (superseded by kovo-space-2) |
+| kovo-space-2 | `kovo-space-app` | `nginx-proxy`, `kovo-space-2-private` | 3000:3000 | `kovo.space` |
+| kovo-space-2 | `kovo-space-db` | `kovo-space-2-private` | — | — (internal only, not public) |
+| nsr | `nsr-app` | `nginx-proxy` | 3010:3000 | `neser.sk` |
 | paster-cloud | `paster-cloud-db` | `paster-cloud-private` | 5432:5432 | — (internal only, not public) |
 | paster-cloud | `paster-cloud-backend` | `nginx-proxy`, `paster-cloud-private` | 4004:4004 | `api.paster.cloud` |
 | paster-cloud | `paster-cloud-frontend` | `nginx-proxy` | 4204:80 | `paster.cloud` |
@@ -168,11 +186,34 @@ Notes:
 - This registry is where the prebuilt images used by `kovo-space` and `paster-cloud`
   (`k0v0/kovo-docker-repo:<app>-<tag>`) come from — build/push happens outside this repo.
 
-### `kovo-space/` — personal site (Rails)
+### `kovo-space/` — personal site (Rails) — **legacy, superseded by `kovo-space-2/`**
 - Single container, image pulled from the private registry.
 - Joins `nginx-proxy`, sets `VIRTUAL_HOST`/`LETSENCRYPT_HOST` to `kovo.space`.
 - Host volumes for sqlite databases and uploads (paths in `.env`).
 - `Dockerfile`/`run.sh` are kept for local image builds; production uses the registry image.
+- Kept in the repo for reference — the live `kovo.space` is now served by `kovo-space-2/`.
+  Both claim the same `VIRTUAL_HOST` (`kovo.space`), so only one of the two may run at a time.
+
+### `kovo-space-2/` — new kovo.space (Payload/Next.js + Postgres)
+- `kovo-space-app` — Payload CMS / Next.js frontend, image pulled from the private registry
+  (`95.216.187.218:5000/kovospace-frontend:latest`, `pull_policy: always`). On both
+  `nginx-proxy` and the private `kovo-space-2-private` network; public at `kovo.space`.
+- `kovo-space-db` (postgres:16-alpine) — only on `kovo-space-2-private`, not public;
+  the app `depends_on` its healthcheck before starting.
+- Host volumes under `/home/kovo/docker/volumes/kovo-space-2/` for postgres data plus
+  media/icon/image uploads.
+- Requires the external `kovo-space-2-private` network to exist first
+  (`docker network create kovo-space-2-private`).
+- Note: this stack references the registry by raw `IP:5000/kovospace-frontend:latest`
+  rather than the `k0v0/kovo-docker-repo:<app>-<tag>` naming the older stacks use.
+
+### `nsr/` — neser.sk (Payload/Next.js, SQLite)
+- `nsr-app` — Payload CMS / Next.js app (event flyers + DJ set uploads). Joins
+  `nginx-proxy`; public at `neser.sk`.
+- Data persisted to host bind mounts (`${DATA_DIR:-./data}`): a SQLite DB file and a
+  `media/` directory for uploads. Runs as `user: "0:0"` so those bind mounts stay writable.
+- The compose file **builds locally** (`build: .`) by default; switch to the commented
+  `image:` line to deploy a prebuilt registry image instead.
 
 ### `paster-cloud/` — 3-tier app (Postgres + Spring Boot + Angular)
 - `paster-cloud-db` (postgres:16) — only on the private `paster-cloud-private` network, not public.
@@ -202,9 +243,10 @@ Notes:
      `VIRTUAL_*`/`LETSENCRYPT_*` vars. Create the network once with
      `docker network create myapp-private` before first `up`.
 
-3. **Secrets**: put real values in a local `.env` next to the compose file (already
-   git-ignored by the repo's `.gitignore`). Commit an `env.template` alongside it with
-   placeholders, following `paster-cloud/env.template`'s style.
+3. **Secrets**: commit an `env.template` alongside the compose file and keep the real
+   `.env` local (git-ignored). Don't hand-write secrets into `.env` — this repo uses
+   **gopnik-vault** to render `.env` from `env.template` at deploy time. See
+   [Secrets (gopnik-vault)](#secrets-gopnik-vault) below.
 
 4. **Custom images**: if the app needs a build, add a `Dockerfile`. For
    anything non-trivial, prefer building the image elsewhere and pushing it to this
@@ -219,6 +261,56 @@ Notes:
 
 6. **Bring it up**: ensure `nginx/` and any required external networks already exist,
    then `cd <project> && docker compose up -d`.
+
+## Secrets (gopnik-vault)
+
+No stack keeps real secrets in git. Each stack commits an `env.template` with
+placeholders and keeps its real `.env` local (git-ignored). The real `.env` is
+**generated** from `env.template` by **gopnik-vault** — a small home-grown wrapper
+around the Linux [`pass`](https://www.passwordstore.org/) password store that acts as a
+poor man's HashiCorp Vault, keeping logins/passwords/secrets out of source and config
+files. The script itself (`~/scripts/gopnik-vault.sh`) lives outside this repo.
+
+### How it works
+
+- Anywhere a secret would go in `env.template`, write a `pass` entry path wrapped in
+  `<<< >>>` instead of the literal value:
+
+  ```
+  PAYLOAD_SECRET=<<<nsr/payload_secret>>>
+  POSTGRES_PASSWORD=<<<kovo-space-2/postgres_password>>>
+  NEXT_PUBLIC_SERVER_URL=https://neser.sk        # non-secret values stay literal
+  ```
+
+- gopnik-vault reads every `env.template` under `DOCKER_COMPOSES_BASEDIR`, replaces each
+  `<<<path>>>` with the secret resolved from `pass`, and writes the result to the `.env`
+  next to it. A rendered `.env` then looks like a normal env file with the real values
+  substituted in.
+
+### Prerequisites (on the host)
+
+- The `pass` utility installed.
+- Its OpenPGP key set up for passwordless access (no passphrase, or unlocked at
+  session startup) so rendering can run unattended before containers start.
+- `DOCKER_COMPOSES_BASEDIR` pointing at where these compose directories live.
+
+### Managing a secret
+
+```bash
+# 1) store a secret (you'll be prompted to type its value)
+pass insert kovo-space-2/postgres_password
+
+# 2) reference it in env.template
+#    POSTGRES_PASSWORD=<<<kovo-space-2/postgres_password>>>
+
+# 3) render .env from every env.template (run manually, or wire it to run
+#    before compose — e.g. via systemd, or paster-cloud/dc's pre_up hook)
+~/scripts/gopnik-vault.sh
+```
+
+`paster-cloud/dc` already calls gopnik-vault as its `pre_up_actions` hook so the stack's
+`.env` is freshly rendered from `pass` right before `docker compose up`. For other
+stacks, run it manually (or hook it up yourself) after any template/secret change.
 
 ## CLAUDE.md
 
