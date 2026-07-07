@@ -12,6 +12,10 @@ services:
       DATABASE_URI: ${DATABASE_URI:-file:/app/data/nsr.db}
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
       NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-https://neser.sk}
+      # Extra origins (comma-separated) allowed to log into the admin / call the
+      # API, in addition to NEXT_PUBLIC_SERVER_URL. Only needed when the site is
+      # reached from more than one origin (e.g. bare IP for testing, or www).
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       # ── nginx-proxy + acme-companion (Let's Encrypt) ─────────────────────
       # Read by the shared proxy/companion containers on the nginx-proxy
       # network: they route the domain to this container and issue its TLS cert.
