@@ -23,6 +23,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# ffmpeg is a runtime dependency of the Music upload hook, which losslessly
+# re-muxes malformed MP3s on upload (see src/collections/hooks/remuxAudioUpload).
+# The hook degrades gracefully if it is absent, but installing it here is what
+# makes the repair actually run in production.
+RUN apk add --no-cache ffmpeg
+
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
@@ -35,6 +41,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # create/sync the schema (push mode) at startup.
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/src ./src
+COPY --from=builder --chown=nextjs:nodejs /app/migrations ./migrations
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
 
