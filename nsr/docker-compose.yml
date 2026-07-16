@@ -19,9 +19,9 @@ services:
       # ── nginx-proxy + acme-companion (Let's Encrypt) ─────────────────────
       # Read by the shared proxy/companion containers on the nginx-proxy
       # network: they route the domain to this container and issue its TLS cert.
-      VIRTUAL_HOST: ${VIRTUAL_HOST:-neser.sk}
+      VIRTUAL_HOST: ${VIRTUAL_HOST:-neser.sk,www.neser.sk}
       VIRTUAL_PORT: ${VIRTUAL_PORT:-3000}
-      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST:-neser.sk}
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST:-neser.sk,www.neser.sk}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-kovo.mato@gmail.com}
     volumes:
       - /home/kovo/docker/volumes/nsr/sqlite/db:/app/data # SQLite database file
