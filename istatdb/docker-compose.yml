@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+
+  app:
+    image: roulage/istatdb:latest
+    container_name: istatdb-app
+    ports:
+      - "3000:3000"
+    environment:
+      - RAILS_ENV=production
+    volumes:
+      - /home/roulage/volumes/db/production.sqlite3:/var/app/db/production.sqlite3
+      - /home/roulage/volumes/db/development.sqlite3:/var/app/db/development.sqlite3
+    networks:
+      - nginx-proxy
+
+  proxy:
+    image: nginx:stable-alpine
+    container_name: istatdb-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - /home/roulage/volumes/nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+    depends_on:
+      - app
+    networks:
+      - nginx-proxy
+
+
+
+networks:
+  nginx-proxy:
+    driver: bridge
