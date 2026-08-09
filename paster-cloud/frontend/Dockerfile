@@ -1,6 +1,6 @@
 # Use an official Node.js runtime as a parent image
 # This image is just temporary for 1st stage to build the angular app
-FROM node:19-alpine as build-temp
+FROM node:19-alpine AS build-temp
 
 # install needed linux packages
 RUN apk add --no-cache bash
@@ -9,17 +9,18 @@ RUN apk add --no-cache bash
 WORKDIR /app
 
 # Copy package.json and package-lock.json to /app
-COPY package*.json .
+# (the angular app lives in the PasterFrontend subfolder of the build context)
+COPY PasterFrontend/package*.json ./
 
 # Copy script that will organize propagation of ENV variables into angular app runtime
-COPY setenv.sh .
+COPY setenv.sh ./
 RUN chmod +x setenv.sh
 
 # Install app dependencies
 RUN npm install
 
 # Copy app source code to /app
-COPY . .
+COPY PasterFrontend/ ./
 
 # Run script that will bind container ENV variables into Angular runtime
 RUN /bin/bash setenv.sh
